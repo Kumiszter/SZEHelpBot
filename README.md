@@ -32,11 +32,11 @@ A botot a Discord Developer Portal segítségével készítjük el Pythonban a D
 
 Feladatai lesznek például:
 
--ügyintézéssel kapcsolatos információk nyújtása pl.: TO ügyintézők elérhetősége
--tájékozódásban segítő térképek nyújtása pl.: a bot képes lesz megmondani egyes nagyobb termek helyeit és bejelölni a térképen számunkra, elmagyarázva, hogy hogyan érjük el azt
--linkgyűjtemény megosztása pl.: működő neptun linkek, tárgyfelvételi mátrix stb.
--fontosabb dátumok megosztása pl.: tárgyfelvétel, tanszünet
--sportolási lehetőségekről tájékoztatás
+- ügyintézéssel kapcsolatos információk nyújtása pl.: TO ügyintézők elérhetősége
+- tájékozódásban segítő térképek nyújtása pl.: a bot képes lesz megmondani egyes nagyobb termek helyeit és bejelölni a térképen számunkra, elmagyarázva, hogy hogyan érjük el azt
+- linkgyűjtemény megosztása pl.: működő neptun linkek, tárgyfelvételi mátrix stb.
+- fontosabb dátumok megosztása pl.: tárgyfelvétel, tanszünet
+- sportolási lehetőségekről tájékoztatás
 
 Ezeket a feladatokat pedig bővítenénk a későbbiekben a webes felületen kisebb parancsokkal, amiket programozási tudás nélkül meg tudunk adni.
 
