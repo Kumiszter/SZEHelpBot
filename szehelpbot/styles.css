@@ -1,0 +1,79 @@
+body {
+    background-color: #8EC5FC;
+    background-image: linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%);
+    font-family: Helvetica, Arial;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    margin-bottom: 40px;
+    background-color: azure;
+    padding: 0;
+    border: 0;
+    font-size: 20px;
+}
+
+nav ul {
+    overflow: auto;
+    list-style: none;
+    padding: 0;
+}
+nav li {
+    float: left;
+    text-align: center;
+    padding: 16px 8px;
+}
+nav li a {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+}
+nav li a:hover{
+    color: dimgray;
+}
+
+nav h1 a{
+    float: left;
+    margin: 8px 50px;
+    text-decoration: none;
+    color: black;
+}
+nav h1 a:hover{
+    color: dimgray;
+}
+
+
+a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+a:hover{
+    color: dimgray;
+}
+
+h1 {
+    font-size: 1.8em;
+}
+
+.halfbox {
+    box-sizing: border-box;
+    width: 50%;
+    padding: 0 20px;
+    float: left;
+    font-size: 16px;
+}
+
+.invite{
+    margin: 25px;
+    font-size: 30px;
+    padding: 2px 6px 2px 6px;
+    border-top: 1px solid #CCCCCC;
+    border-right: 1px solid #333333;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #CCCCCC;
+    background: azure;
+    width: 200px;
+    align-content: center;
+}
