@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup as bs
 import pandas as pd
 import lxml
 from keep_alive import keep_alive
+from replit import db
 
 client = discord.Client()
 
