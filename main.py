@@ -13,6 +13,11 @@ client = discord.Client()
 embed = discord.Embed()  
 
 
+
+
+##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
+commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
+
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
@@ -32,6 +37,8 @@ async def on_message(message):
   if msg.startswith("hol van"):
     ##ide fognak jönni a különböző képek, amiken be lesz jelölve a kérdezett helység
     await message.channel.send("terkep")
+
+
 
 
   if msg.startswith('!neptun'):
@@ -64,30 +71,36 @@ async def on_message(message):
 
   if msg.startswith("!to"):
     df_list = pd.read_html('https://to.sze.hu/kezdolap', header=0)
-    df = df_list[0]
-    await message.channel.send(df)
-    ##szépíteni!!!
+    li =df_list[0].values.tolist()
+    for x in range(12):
+      for y in range(2):
+        li[x][y]=li[x][y].split('/')[0]
+    df = pd.DataFrame(li, columns=['Dátum','Nap','Időpont'])
+    embedVar = discord.Embed(title="Tanulmányi Osztály", description="", color=0x00ff00)
+    embedVar.add_field(name="ügyfélfogadás:", value=df, inline=False)
+    await message.channel.send(embed=embedVar)
+
 
   
   if msg.startswith("!datumok"):
-    embedVar = discord.Embed(title="Fontos dátumok 2021/22/1", description="", color=0x00ff00)
+    embedVar = discord.Embed(title="Fontos dátumok", description="2021/22/1", color=0x00ff00)
     embedVar.add_field(name="Bejelentkezés:", value="2021.08.25. 8:00 - 09.04. 23:59", inline=False)
     embedVar.add_field(name="Tárgyfelvétel:", value="2021.08.30. 8:00 - 09.04. 23:59", inline=False)
     embedVar.add_field(name="Szorgalmi időszak:", value="2021.09.06. - 12.11.", inline=False)
     embedVar.add_field(name="Vizsgajelentkezés:", value="2021.12.06. 8:00", inline=False)
     embedVar.add_field(name="Vizsgaidőszak:", value="2021.12.13. - 2022.01.29.", inline=False)
     embedVar.add_field(name="Métányossági vizsgák:", value="2022.02.02. - 2022.02.05.", inline=False)
-    embedVar.add_field(name="\n", value="", inline=False)
-    
-    embedVar.add_field(name="Fontos dátumok 2021/22/2", value="", inline=False)
-    embedVar.add_field(name="Bejelentkezés:", value="2022.01.26. 8:00 - 02.05. 23:59", inline=False)
-    embedVar.add_field(name="Tárgyfelvétel:", value="2022.01.31. 8:00 - 02.05. 23:59", inline=False)
-    embedVar.add_field(name="Szorgalmi időszak:", value="2022.02.07. - 05.14.", inline=False)
-    embedVar.add_field(name="Vizsgajelentkezés:", value="2022.05.09. 8:00", inline=False)
-    embedVar.add_field(name="Vizsgaidőszak:", value="2022.05.16. - 2022.07.02.", inline=False)
-    embedVar.add_field(name="Métányossági vizsgák:", value="2022.07.06. - 2022.07.09.", inline=False)
-    embedVar.add_field(name="Naptár több eseményekkel:", value="https://neptun.sze.hu/icalendar/index/currentDate/2021-11-02/", inline=False)
     await message.channel.send(embed=embedVar)
+
+    embedVar2 = discord.Embed(title="Fontos dátumok", description="2021/22/2", color=0x00ff00)
+    embedVar2.add_field(name="Bejelentkezés:", value="2022.01.26. 8:00 - 02.05. 23:59", inline=False)
+    embedVar2.add_field(name="Tárgyfelvétel:", value="2022.01.31. 8:00 - 02.05. 23:59", inline=False)
+    embedVar2.add_field(name="Szorgalmi időszak:", value="2022.02.07. - 05.14.", inline=False)
+    embedVar2.add_field(name="Vizsgajelentkezés:", value="2022.05.09. 8:00", inline=False)
+    embedVar2.add_field(name="Vizsgaidőszak:", value="2022.05.16. - 2022.07.02.", inline=False)
+    embedVar2.add_field(name="Métányossági vizsgák:", value="2022.07.06. - 2022.07.09.", inline=False)
+    embedVar2.add_field(name="Naptár több eseményekkel:", value="https://neptun.sze.hu/icalendar/index/currentDate/2021-11-02/", inline=False)
+    await message.channel.send(embed=embedVar2)
 
   if msg.startswith("!szoctam"):
     embedVar = discord.Embed(title="SzocTám KisOkos", description="", color=0x00ff00)
