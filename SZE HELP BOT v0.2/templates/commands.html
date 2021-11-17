@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Aktív parancsok{% endblock %}
+
+{% block content %}
+<div class="gradientbackground">
+    <div class="container col-xxl-5 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                <h1 class="display-6 fw-bold lh-1 mb-3">Aktív Parancsok</h1>
+<!-- 		       	<ul class="list-group">
+                	{% for command in commands %}
+				  		<li class="list-group-item">{{command}}</li>
+					{% endfor %}
+				</ul> -->
+
+				<ul class="list-group">
+	 				{% for item in values %}
+				  		<li class="list-group-item">{{ item.command }} <a href="/parancs-modositas/{{item.id}}" class="btn btn-outline-secondary btn-sm">Módosít</a>
+				  		<a href="/parancs-torles/{{item.id}}" class="btn btn-outline-danger btn-sm">Töröl</a>
+				  		<br>{{ item.title }}<br>{{ item.name }}<br>{{ item.output }}</li>
+					{% endfor %}
+				</ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
