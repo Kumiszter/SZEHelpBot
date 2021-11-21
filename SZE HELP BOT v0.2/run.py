@@ -71,22 +71,25 @@ def home():
 def commandcreator():
     alap_commands = default_commands
     data = request.form
-    #TODO validate "!"" at the command start
-    if request.method == 'POST' and data['command'] not in alap_commands:
-        #TODO megnézni szebben? immutabledict->str
-        commands_schema = CommandsSchema()
-        dict_tpye = (commands_schema.dump(data))
-        string_type = (json.dumps(dict_tpye))
-        try:
-            new_command = commands_schema.loads(string_type)
-            db.session.add(new_command)
-            db.session.commit()
-            return redirect('/aktiv-parancsok')
-        except:
-            flash('ures mezo maradt', category='error')
-    else:
-        flash('alap command nev', category='error')
-    return render_template("commandcreator.html")
+    if not request.method == 'POST':
+      return render_template("commandcreator.html")
+    if data['command'] in alap_commands:
+      flash('alap command nev', category='error')
+      return render_template("commandcreator.html")
+    if not data['command'].startswith('!'):
+      flash('commandnak "!"-kell kezdodnie', category='error')
+      return render_template("commandcreator.html")
+    commands_schema = CommandsSchema()
+    dict_tpye = (commands_schema.dump(data))
+    string_type = (json.dumps(dict_tpye))
+    try:
+      new_command = commands_schema.loads(string_type)
+      db.session.add(new_command)
+      db.session.commit()
+      return redirect('/aktiv-parancsok')
+    except:
+      flash('ures mezo maradt', category='error')
+      return render_template("commandcreator.html")
 
 @app.route("/aktiv-parancsok")
 def commandlist():
