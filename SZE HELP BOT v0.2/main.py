@@ -3,6 +3,8 @@ import os
 import pandas as pd
 from keep_alive import keep_alive
 
+from run import Commands, db
+
 client = discord.Client()
 
 embed = discord.Embed()  
@@ -22,6 +24,13 @@ async def on_message(message):
 
   msg = message.content
 
+  #keresni all commands queryben ha nincs ott akor nincs command
+  #ha van akkor a hozzá tartozó értékeket kivenni
+
+  #if{ msg and? } Commands.query_all(filter_by="!commandneve").first():
+  # embedVar = discord.Embed(title="query.title", description="", color=0x00ff00)
+  # embedVar.add_field(name="query.name:", value="query.value", inline=False)
+  
   if msg.startswith("!terkep"):
     embedVar = discord.Embed(title="SZE Térkép", description="", color=0x00ff00)
     embedVar.set_image(url="https://cdn.discordapp.com/attachments/255085444507762688/892750999729627177/terkep.png")
