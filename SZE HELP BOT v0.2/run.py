@@ -6,7 +6,7 @@ import json
 
 
 from datetime import datetime
-from marshmallow.utils import timedelta_to_microseconds
+
 
 from marshmallow_sqlalchemy.schema import auto_field
 
@@ -75,16 +75,17 @@ def commandcreator():
     if request.method == 'POST' and data['command'] not in alap_commands:
         #TODO megnézni szebben? immutabledict->str
         commands_schema = CommandsSchema()
-        dictes = (commands_schema.dump(data))
-        string = (json.dumps(dictes))
+        dict_tpye = (commands_schema.dump(data))
+        string_type = (json.dumps(dict_tpye))
         try:
-            valami = commands_schema.loads(string)
-            db.session.add(valami)
+            new_command = commands_schema.loads(string_type)
+            db.session.add(new_command)
             db.session.commit()
+            return redirect('/aktiv-parancsok')
         except:
             flash('ures mezo maradt', category='error')
-        else:
-            flash('alap command nev', category='error')
+    else:
+        flash('alap command nev', category='error')
     return render_template("commandcreator.html")
 
 @app.route("/aktiv-parancsok")
