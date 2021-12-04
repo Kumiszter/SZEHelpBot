@@ -3,12 +3,14 @@ import os
 import pandas as pd
 from keep_alive import keep_alive
 
+from run import Commands, db
+
 client = discord.Client()
 
 embed = discord.Embed()  
 
-
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
+#be vannak ezek kódolva cuccba ezért nem találja meg query
 commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
 @client.event
@@ -21,6 +23,12 @@ async def on_message(message):
     return
 
   msg = message.content
+  found_command = Commands.query.filter_by(command=msg).first()
+  if found_command:
+    #found_command = Commands.query.filter_by(command=msg).first()
+    embedVar = discord.Embed(title=found_command.title, description="", color=0x00ff00)
+    embedVar.add_field(name=found_command.name, value=found_command.output, inline=False)
+    await message.channel.send(embed=embedVar)
 
   if msg.startswith("!terkep"):
     embedVar = discord.Embed(title="SZE Térkép", description="", color=0x00ff00)
@@ -31,9 +39,6 @@ async def on_message(message):
     ##ide fognak jönni a különböző képek, amiken be lesz jelölve a kérdezett helység
     await message.channel.send("terkep")
 
-
-
-
   if msg.startswith('!neptun'):
     embedVar = discord.Embed(title="Működő Neptun linkek: ", description="", color=0x00ff00)
     embedVar.add_field(name="Netw5:", value="https://netw5.nnet.sze.hu/hallgato/login.aspx", inline=False)
@@ -41,7 +46,6 @@ async def on_message(message):
     embedVar.add_field(name="Netw7:", value="https://netw7.nnet.sze.hu/hallgato/login.aspx", inline=False)
     embedVar.add_field(name="Netw8:", value="https://netw8.nnet.sze.hu/hallgato/login.aspx", inline=False)
     await message.channel.send(embed=embedVar)
-
 
   if msg.startswith('!gyujtoszamla'):
     embedVar = discord.Embed(title="Gyüjtőszmálára való utalás menete: ", description="", color=0x00ff00)
@@ -73,8 +77,6 @@ async def on_message(message):
     embedVar.add_field(name="ügyfélfogadás:", value=df, inline=False)
     await message.channel.send(embed=embedVar)
 
-
-  
   if msg.startswith("!datumok"):
     embedVar = discord.Embed(title="Fontos dátumok", description="2021/22/1", color=0x00ff00)
     embedVar.add_field(name="Bejelentkezés:", value="2021.08.25. 8:00 - 09.04. 23:59", inline=False)
@@ -101,5 +103,6 @@ async def on_message(message):
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
 
+token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.kUXxwhvFUFjcWOvw1pjEwZNEBH8'
 keep_alive()
-client.run(os.getenv('TOKEN'))
+client.run(token)
