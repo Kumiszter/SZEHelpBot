@@ -1,20 +1,74 @@
+from datetime import datetime, date
 import discord
 import os
+from discord import message
+from discord.embeds import Embed
 import pandas as pd
 from keep_alive import keep_alive
+import json
+import re
+import urllib.request
+from discord.ext import tasks
 
-from run import Commands, db
+from run import Commands, Dates
 
 client = discord.Client()
 
 embed = discord.Embed()  
 
+#bot = commands.Bot()
+
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
 #be vannak ezek kódolva cuccba ezért nem találja meg query
 commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
+@tasks.loop(seconds=10)
+async def checkforvideos():
+  with open("yt_data.json", "r") as f:
+    data=json.load(f)
+  print("Now Checking!")
+  #checking for all the channels in youtubedata.json file
+  for youtube_channel in data:
+    print(f"Now Checking For {data[youtube_channel]['channel_name']}")
+    channel = f"https://www.youtube.com/channel/{youtube_channel}"
+    html = urllib.request.urlopen(channel+"/videos")
+    print(type(html.read().decode()))
+    try:
+      #latest_video_url = "https://www.youtube.com/watch?v=" + re.search('(?<="video-title":").*?(?=")', html).group()
+      #latest_video_url = 'https://www.youtube.com/watch?v=C9980RB1Kes&t=2s'
+      print("wa")
+      #print(latest_video_url)
+    except:
+      continue
+    #checking if url in youtubedata.json file is not equals to latest_video_url
+    if not str(data[youtube_channel]["latest_video_url"]) == latest_video_url:
+      print("wa")
+      data[str(youtube_channel)]['latest_video_url'] = latest_video_url
+      with open("yt_data.json", "w") as f:
+        json.dump(data, f)
+      #getting the channel to send the message
+      #hardcode ink?
+      discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
+      discord_channel = client.get_channel(int(discord_channel_id))
+      msg = f"@everyone {data[str(youtube_channel)]['channel_name']} Just Uploaded A Video Go Check It Out: {latest_video_url}"
+      await discord_channel.send(msg)
+
+@tasks.loop(seconds=10)
+async def checkfordates():
+  dates = Dates.query.all()
+  date_now = datetime.today()
+  embedVar = discord.Embed(title="Összes egyéni dátum",description="A weboldalon beállított dátumok és hozzájuk tartozó események", color=0xcc0000)
+  for date in dates:
+    diff = date.date - date_now
+    embedVar.add_field(name=date.event, value=f"{diff.days} napra van!", inline=False)
+    #embedVar.add_field(name=f"Ez a dátumhoz adott esemény" , value=date.event, inline=False)
+    discord_channel = client.get_channel(831159464777744425)
+  await discord_channel.send(embed=embedVar)
+
 @client.event
 async def on_ready():
+  checkforvideos.start()
+  #checkfordates.start()
   print('we have logged in as {0.user}'.format(client))
 
 @client.event
@@ -103,6 +157,6 @@ async def on_message(message):
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
 
-token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.kUXxwhvFUFjcWOvw1pjEwZNEBH8'
+token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.FC7FT0cH3JiWgy9u1V9cVrgbnPw'
 keep_alive()
 client.run(token)
