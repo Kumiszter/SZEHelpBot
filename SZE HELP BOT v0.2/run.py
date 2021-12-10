@@ -34,7 +34,6 @@ class Commands(db.Model):
         self.title = title
         self.name = name
         self.output = output
-    #	self.date_created = date_created
 
 
 class Dates(db.Model):
@@ -57,17 +56,6 @@ class DatesSchema(ma.SQLAlchemySchema):
     def make_date(self , data, **kwargs):
          return Dates(**data)
 
-    # @pre_load
-    # def future_date(self, data, **kwargs):
-    #     if data['date'] < datetime.today():
-    #         raise ValidationError
-    #     return data
-    # @post_dump
-    # def change_string_to_datetime(self, data, **kwargs):
-    #     for field in data:
-    #         if data[field] != "date":
-    #             data[field] = datetime.strptime(data[field],'%Y %b %d' )
-    #     return data
 
 class CommandsSchema(ma.SQLAlchemySchema):
     class Meta:

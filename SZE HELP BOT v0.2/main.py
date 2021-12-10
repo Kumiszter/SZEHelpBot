@@ -6,7 +6,6 @@ from discord.embeds import Embed
 import pandas as pd
 from keep_alive import keep_alive
 import json
-import re
 import scrapetube
 from discord.ext import tasks
 
@@ -16,12 +15,11 @@ client = discord.Client()
 
 embed = discord.Embed()  
 
-#bot = commands.Bot()
-
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
 #be vannak ezek kódolva cuccba ezért nem találja meg query
 commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
+#időintervallum 24h?
 @tasks.loop(seconds=20)
 async def checkforvideos():
   videos = scrapetube.get_channel("UChSdMh3jciQ7LyGTFQ7fvGQ", sleep=30, limit=3)
@@ -29,26 +27,22 @@ async def checkforvideos():
   for video in videos:
     valami.append((video['videoId']))
   latest_video_url = valami[0]
-  #https://www.youtube.com/watch?v=C9980RB1Kes&t=2s
   with open("yt_data.json", "r") as f:
     data=json.load(f)
   print("Now Checking!")
-  #checking for all the channels in youtubedata.json file
   for youtube_channel in data:
     print(f"Now Checking For {data[youtube_channel]['channel_name']}")
-    #checking if url in youtubedata.json file is not equals to latest_video_url
     if not str(data[youtube_channel]["latest_video_url"]) == latest_video_url:
-      print("wa")
       data[str(youtube_channel)]['latest_video_url'] = latest_video_url
       with open("yt_data.json", "w") as f:
         json.dump(data, f)
-      #getting the channel to send the message
       #hardcode ink?
       discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
       discord_channel = client.get_channel(int(discord_channel_id))
       msg = f"@everyone {data[str(youtube_channel)]['channel_name']} feltöltött egy új youtube videót! Itt a hozzá tartozó link: {'https://www.youtube.com/watch?v='+latest_video_url}"
       await discord_channel.send(msg)
 
+#időintervallum 24h?
 @tasks.loop(seconds=40)
 async def checkfordates():
   dates = Dates.query.all()
@@ -57,7 +51,6 @@ async def checkfordates():
   for date in dates:
     diff = date.date - date_now
     embedVar.add_field(name=date.event, value=f"{diff.days} napra van!", inline=False)
-    #embedVar.add_field(name=f"Ez a dátumhoz adott esemény" , value=date.event, inline=False)
     discord_channel = client.get_channel(831159464777744425)
   await discord_channel.send(embed=embedVar)
 
