@@ -78,11 +78,8 @@ class CommandsSchema(ma.SQLAlchemySchema):
         return data
         
 
-
-#seed? 
 default_commands = ["!terkep", "!neptun", "!gyujtoszamla", "!linkek", "!to", "!datumok", "!szoctam"]
 
-#Commands(command, title, name, output)
 
 @app.route("/")
 def home():
