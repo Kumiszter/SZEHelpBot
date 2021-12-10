@@ -1,13 +1,11 @@
-from asyncio import events
 from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from marshmallow import fields, post_load, post_dump , ValidationError, pre_load
+from marshmallow import fields, post_load, post_dump 
 import json
 
 
 from datetime import datetime
-from marshmallow.decorators import pre_load
 
 
 from marshmallow_sqlalchemy.schema import auto_field
@@ -200,6 +198,11 @@ def delete_date(id):
 @app.route("/aktiv-datumok")
 def datelist():
     return render_template("dates.html", values=Dates.query.all())
+
+
+
+
+
 
 if __name__ == "__main__":
     #db.create_all()
