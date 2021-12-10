@@ -15,10 +15,6 @@ client = discord.Client()
 
 embed = discord.Embed()  
 
-##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
-#be vannak ezek kódolva cuccba ezért nem találja meg query
-commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
-
 #időintervallum 24h?
 @tasks.loop(seconds=20)
 async def checkforvideos():
