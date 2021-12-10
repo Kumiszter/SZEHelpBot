@@ -152,7 +152,7 @@ async def on_message(message):
     embedVar.add_field(name="Szociális támogatás igénylésést segítő KisOkos:", value="https://kollegium.sze.hu/images/Határ%20segédlet/SzocTám%20kisokos%20elsőéves_kollégiumi%20jelentkezéshez.pdf", inline=False)
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
-
-token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.RNNZLDmSSFyQWBIkLuGm5uRjslw'
+#TOKEN NE PUSHOLD
+token = ''
 keep_alive()
 client.run(token)
