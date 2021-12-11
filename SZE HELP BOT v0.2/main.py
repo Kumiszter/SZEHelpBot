@@ -1,20 +1,59 @@
+from datetime import datetime, date
 import discord
 import os
+from discord import message
+from discord.embeds import Embed
 import pandas as pd
 from keep_alive import keep_alive
+import json
+import scrapetube
+from discord.ext import tasks
 
-from run import Commands, db
+from run import Commands, Dates
 
 client = discord.Client()
 
 embed = discord.Embed()  
 
-##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
-#be vannak ezek kódolva cuccba ezért nem találja meg query
-commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
+#időintervallum 24h?
+@tasks.loop(seconds=20)
+async def checkforvideos():
+  videos = scrapetube.get_channel("UChSdMh3jciQ7LyGTFQ7fvGQ", sleep=30, limit=3)
+  valami =[]
+  for video in videos:
+    valami.append((video['videoId']))
+  latest_video_url = valami[0]
+  with open("yt_data.json", "r") as f:
+    data=json.load(f)
+  print("Now Checking!")
+  for youtube_channel in data:
+    print(f"Now Checking For {data[youtube_channel]['channel_name']}")
+    if not str(data[youtube_channel]["latest_video_url"]) == latest_video_url:
+      data[str(youtube_channel)]['latest_video_url'] = latest_video_url
+      with open("yt_data.json", "w") as f:
+        json.dump(data, f)
+      #hardcode ink?
+      discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
+      discord_channel = client.get_channel(int(discord_channel_id))
+      msg = f"@everyone {data[str(youtube_channel)]['channel_name']} feltöltött egy új youtube videót! Itt a hozzá tartozó link: {'https://www.youtube.com/watch?v='+latest_video_url}"
+      await discord_channel.send(msg)
+
+#időintervallum 24h?
+@tasks.loop(seconds=40)
+async def checkfordates():
+  dates = Dates.query.all()
+  date_now = datetime.today()
+  embedVar = discord.Embed(title="Összes egyéni dátum",description="A weboldalon beállított dátumok és hozzájuk tartozó események", color=0xcc0000)
+  for date in dates:
+    diff = date.date - date_now
+    embedVar.add_field(name=date.event, value=f"{diff.days} napra van!", inline=False)
+    discord_channel = client.get_channel(831159464777744425)
+  await discord_channel.send(embed=embedVar)
 
 @client.event
 async def on_ready():
+  checkfordates.start()
+  checkforvideos.start()
   print('we have logged in as {0.user}'.format(client))
 
 @client.event
@@ -102,7 +141,7 @@ async def on_message(message):
     embedVar.add_field(name="Szociális támogatás igénylésést segítő KisOkos:", value="https://kollegium.sze.hu/images/Határ%20segédlet/SzocTám%20kisokos%20elsőéves_kollégiumi%20jelentkezéshez.pdf", inline=False)
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
-
-token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.kUXxwhvFUFjcWOvw1pjEwZNEBH8'
+#TOKEN NE PUSHOLD
+token = ''
 keep_alive()
 client.run(token)
