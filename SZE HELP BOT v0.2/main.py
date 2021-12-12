@@ -4,16 +4,27 @@ import os
 from discord import message
 from discord.embeds import Embed
 import pandas as pd
-from keep_alive import keep_alive
 import json
+from keep_alive import keep_alive
 import scrapetube
 from discord.ext import tasks
 
 from run import Commands, Dates
 
-client = discord.Client()
+from discord.ext import commands
+
+intents = discord.Intents.default()
+intents.members = True
+
+client = discord.Client(intents=intents)
 
 embed = discord.Embed()  
+
+
+
+##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
+#be vannak ezek kódolva cuccba ezért nem találja meg query
+commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
 #időintervallum 24h?
 @tasks.loop(seconds=20)
@@ -49,6 +60,7 @@ async def checkfordates():
     embedVar.add_field(name=date.event, value=f"{diff.days} napra van!", inline=False)
     discord_channel = client.get_channel(831159464777744425)
   await discord_channel.send(embed=embedVar)
+
 
 @client.event
 async def on_ready():
@@ -141,7 +153,29 @@ async def on_message(message):
     embedVar.add_field(name="Szociális támogatás igénylésést segítő KisOkos:", value="https://kollegium.sze.hu/images/Határ%20segédlet/SzocTám%20kisokos%20elsőéves_kollégiumi%20jelentkezéshez.pdf", inline=False)
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
-#TOKEN NE PUSHOLD
+
+
+  if msg.startswith("!help"):
+    embedVar = discord.Embed(title="Szerveren elérhető parancsok", description="", color=0x00ff00)
+    embedVar.add_field(name="!neptun:", value="Jelenleg elérhető neptun linkek", inline=False)
+    embedVar.add_field(name="!datumok", value="Az idei tanév fontosabb dátumai", inline=False)
+    embedVar.add_field(name="!terkep", value="A campus térképe", inline=False)
+    embedVar.add_field(name="!to", value="Tanulmányi osztály ügyfélfogadási ideje", inline=False)
+    embedVar.add_field(name="!linkek", value="Hasznos linkek", inline=False)
+    embedVar.add_field(name="!szoctam", value="Szociális támogatás kisokos", inline=False)
+    embedVar.add_field(name="!gyujtoszamla", value="Neptun gyűjtőszámlára utalás tutorial", inline=False)
+    await message.channel.send(embed=embedVar)
+
+# Üdvözlő üzenet új felhasználónak
+@client.event
+async def on_member_join(member):
+  guild = client.get_guild(813710089718071296)
+  channel = guild.get_channel(813710089718071299)
+  await channel.send(f'Üdv a szerveren {member.mention} ! :partying_face:') 
+  await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+
+
+#NE PUSHOLD
 token = ''
 keep_alive()
 client.run(token)
