@@ -144,6 +144,18 @@ async def on_raw_reaction_add(payload):
     member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
     #  if member is not None:
     await member.add_roles(role)
+  if payload.emoji.name == "🔴" and payload.message_id == 918833217082114068:
+    role = discord.utils.get(guild.roles, name="Gépész")
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    #  if member is not None:
+    await member.add_roles(role)
+  if payload.emoji.name == "🔴" and payload.message_id == 918833269775138916:
+    role = discord.utils.get(guild.roles, name="Gazdinfó")
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    #  if member is not None:
+    await member.add_roles(role)
 
 @client.event
 async def on_raw_reaction_remove(payload):
