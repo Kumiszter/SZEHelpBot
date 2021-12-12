@@ -172,6 +172,10 @@ async def on_message(message):
     embedVar.add_field(name="!szoctam", value="Szociális támogatás kisokos", inline=False)
     embedVar.add_field(name="!gyujtoszamla", value="Neptun gyűjtőszámlára utalás tutorial", inline=False)
     await message.channel.send(embed=embedVar)
+  
+  if msg[0] == "!":
+    emoji ='🥶'
+    await message.add_reaction(emoji)
 
 # Üdvözlő üzenet új felhasználónak
 @client.event
