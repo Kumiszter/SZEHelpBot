@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import json
 from keep_alive import keep_alive
+from discord import Intents
 
 from run import Commands, db
 
@@ -12,6 +13,9 @@ intents = discord.Intents.default()
 intents.members = True
 
 client = discord.Client(intents=intents)
+
+prefix = "!"
+bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 embed = discord.Embed()  
 
@@ -130,6 +134,30 @@ async def on_member_join(member):
   await channel.send(f'Üdv a szerveren {member.mention} ! :partying_face:') 
   await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
 
-token = ''
+# Reaction alapján role adás a felhasználónak
+@client.event
+async def on_raw_reaction_add(payload):
+  guild = discord.utils.find(lambda g: g.id == payload.guild_id, bot.guilds)
+
+  if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186:
+    role = discord.utils.get(guild.roles, name="Mérnökinfó")
+    if role is not None:
+      member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+      if member is not None:
+        await member.add_roles(role)
+
+@client.event
+async def on_raw_reaction_remove(payload):
+  guild = discord.utils.find(lambda g: g.id == payload.guild_id, bot.guilds)
+
+  if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186: 
+    role = discord.utils.get(guild.roles, name="Mérnökinfó")
+    if role is not None:
+      member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+      if member is not None:
+        await member.remove_roles(role)
+
+
+token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.nKDit58KpyBE4ABuOkcDXVDjsg8'
 keep_alive()
 client.run(token)
