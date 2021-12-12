@@ -137,27 +137,26 @@ async def on_member_join(member):
 # Reaction alapján role adás a felhasználónak
 @client.event
 async def on_raw_reaction_add(payload):
-  guild = discord.utils.find(lambda g: g.id == payload.guild_id, bot.guilds)
-
+  guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
   if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186:
     role = discord.utils.get(guild.roles, name="Mérnökinfó")
-    if role is not None:
-      member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-      if member is not None:
-        await member.add_roles(role)
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    #  if member is not None:
+    await member.add_roles(role)
 
 @client.event
 async def on_raw_reaction_remove(payload):
-  guild = discord.utils.find(lambda g: g.id == payload.guild_id, bot.guilds)
+  guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
 
   if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186: 
     role = discord.utils.get(guild.roles, name="Mérnökinfó")
-    if role is not None:
-      member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-      if member is not None:
-        await member.remove_roles(role)
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+     # if member is not None:
+    await member.remove_roles(role)
 
 
-token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.nKDit58KpyBE4ABuOkcDXVDjsg8'
+token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.vqLmqW_9ZYYtkBvBpUMO9yjGYm0'
 keep_alive()
 client.run(token)
