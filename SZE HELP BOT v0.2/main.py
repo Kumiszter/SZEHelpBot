@@ -8,6 +8,7 @@ from keep_alive import keep_alive
 import json
 import scrapetube
 from discord.ext import tasks
+import key
 
 from run import Commands, Dates
 
@@ -141,7 +142,7 @@ async def on_message(message):
     embedVar.add_field(name="Szociális támogatás igénylésést segítő KisOkos:", value="https://kollegium.sze.hu/images/Határ%20segédlet/SzocTám%20kisokos%20elsőéves_kollégiumi%20jelentkezéshez.pdf", inline=False)
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
-#TOKEN NE PUSHOLD
-token = ''
+
+
 keep_alive()
-client.run(token)
+client.run(key.TOKEN)
