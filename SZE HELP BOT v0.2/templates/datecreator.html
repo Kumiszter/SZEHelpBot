@@ -11,7 +11,10 @@
 {% endwith %}
 <div class="gradientbackground">
     <div class="container col-xxl-8 px-4 py-5">
-        <h4>Dátum hozzáadás<h4>
+        <h4>Esemény hozzáadás<h4>
+        <p class="lead">
+            Az alábbi űrlapon saját eseményeket adhatunk meg. Esemény létrehozása után 24 óránként a bot figyelmeztetőt fog küldeni, mennyi idő van hátra az eseményig.
+        </p>
         <form method="POST" action="/datum-letrehozas">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="date">Adott dátum</span>
@@ -25,10 +28,6 @@
                 <span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Létrehozás</button></span>
             </div>
         </form>
-        <div class="examplepic shadow-sm mx-auto" style="width: 50%; height: 315px; border-radius: 21px 21px 21px 21px">
-            <img src="../static/example.png" class="d-block mx-lg-auto img-fluid" alt="Példa" width="450" loading="lazy">
-        </div>
-
     </div>
 </div>
 {% endblock %}
