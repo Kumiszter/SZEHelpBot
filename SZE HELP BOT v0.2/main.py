@@ -1,10 +1,15 @@
+from datetime import datetime, date
 import discord
 import os
+from discord import message
+from discord.embeds import Embed
 import pandas as pd
 import json
 from keep_alive import keep_alive
+import scrapetube
+from discord.ext import tasks
 
-from run import Commands, db
+from run import Commands, Dates
 
 from discord.ext import commands
 
@@ -15,14 +20,52 @@ client = discord.Client(intents=intents)
 
 embed = discord.Embed()  
 
-print(discord.__version__)
+
 
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
 #be vannak ezek kódolva cuccba ezért nem találja meg query
 commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
+#időintervallum 24h?
+@tasks.loop(seconds=20)
+async def checkforvideos():
+  videos = scrapetube.get_channel("UChSdMh3jciQ7LyGTFQ7fvGQ", sleep=30, limit=3)
+  valami =[]
+  for video in videos:
+    valami.append((video['videoId']))
+  latest_video_url = valami[0]
+  with open("yt_data.json", "r") as f:
+    data=json.load(f)
+  print("Now Checking!")
+  for youtube_channel in data:
+    print(f"Now Checking For {data[youtube_channel]['channel_name']}")
+    if not str(data[youtube_channel]["latest_video_url"]) == latest_video_url:
+      data[str(youtube_channel)]['latest_video_url'] = latest_video_url
+      with open("yt_data.json", "w") as f:
+        json.dump(data, f)
+      #hardcode ink?
+      discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
+      discord_channel = client.get_channel(int(discord_channel_id))
+      msg = f"@everyone {data[str(youtube_channel)]['channel_name']} feltöltött egy új youtube videót! Itt a hozzá tartozó link: {'https://www.youtube.com/watch?v='+latest_video_url}"
+      await discord_channel.send(msg)
+
+#időintervallum 24h?
+@tasks.loop(seconds=40)
+async def checkfordates():
+  dates = Dates.query.all()
+  date_now = datetime.today()
+  embedVar = discord.Embed(title="Összes egyéni dátum",description="A weboldalon beállított dátumok és hozzájuk tartozó események", color=0xcc0000)
+  for date in dates:
+    diff = date.date - date_now
+    embedVar.add_field(name=date.event, value=f"{diff.days} napra van!", inline=False)
+    discord_channel = client.get_channel(831159464777744425)
+  await discord_channel.send(embed=embedVar)
+
+
 @client.event
 async def on_ready():
+  checkfordates.start()
+  checkforvideos.start()
   print('we have logged in as {0.user}'.format(client))
 
 @client.event
@@ -111,6 +154,7 @@ async def on_message(message):
     embedVar.set_image(url="https://hok.uni-obuda.hu/uploads/File/almasir/makeItRain.jpg")
     await message.channel.send(embed=embedVar)
 
+
   if msg.startswith("!help"):
     embedVar = discord.Embed(title="Szerveren elérhető parancsok", description="", color=0x00ff00)
     embedVar.add_field(name="!neptun:", value="Jelenleg elérhető neptun linkek", inline=False)
@@ -130,6 +174,8 @@ async def on_member_join(member):
   await channel.send(f'Üdv a szerveren {member.mention} ! :partying_face:') 
   await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
 
+
+#NE PUSHOLD
 token = ''
 keep_alive()
 client.run(token)

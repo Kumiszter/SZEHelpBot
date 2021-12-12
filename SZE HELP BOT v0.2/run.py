@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from marshmallow import post_load, post_dump
+from marshmallow import fields, post_load, post_dump 
 import json
 
 
@@ -34,7 +34,28 @@ class Commands(db.Model):
         self.title = title
         self.name = name
         self.output = output
-    #	self.date_created = date_created
+
+
+class Dates(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    date = db.Column(db.DateTime, nullable=False, unique=True)
+    event = db.Column(db.String(100), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.now)
+    def __init__(self, date, event):
+        self.date = date
+        self.event = event
+
+class DatesSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Dates
+    id = auto_field()
+    date = fields.DateTime('%Y.%b.%d', Required=True)	
+    event = auto_field(Required=True)
+
+    @post_load
+    def make_date(self , data, **kwargs):
+         return Dates(**data)
+
 
 class CommandsSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -57,11 +78,8 @@ class CommandsSchema(ma.SQLAlchemySchema):
         return data
         
 
-
-#seed? 
 default_commands = ["!terkep", "!neptun", "!gyujtoszamla", "!linkek", "!to", "!datumok", "!szoctam"]
 
-#Commands(command, title, name, output)
 
 @app.route("/")
 def home():
@@ -122,6 +140,49 @@ def delete(id):
         return redirect("/aktiv-parancsok")
     except:
         return "Nem sikerült törölni a parancsot!"
+
+#uj endpoint datum elerkezesenek
+@app.route("/datum-letrehozas", methods=['POST', 'GET'])
+def datecreator():
+    data = request.form
+    if not request.method == 'POST':
+      return render_template("datecreator.html")
+    dates_schema = DatesSchema(many=False)
+    valami = json.dumps(data)
+    valami2 = json.loads(valami)
+    try:
+        valami2['date'] = datetime.strptime(valami2['date'],'%Y.%m.%d')
+    except:
+        flash('rossz datum formatum (év.hónap.nap)' ,category='error')
+        return render_template("datecreator.html")
+    if valami2['date'] < datetime.today():
+        flash('csak jövőbeni dátumot lehet megadni ', category='error')
+        return render_template("datecreator.html")
+    dict_tpye = (dates_schema.dump(valami2))
+    string_type = (json.dumps(dict_tpye))
+    print(string_type)
+    try:
+        new_date = dates_schema.loads(string_type)
+        db.session.add(new_date)
+        db.session.commit()
+        return redirect('/aktiv-datumok')
+    except:
+        flash('ures mezo maradt', category='error')
+        return render_template("datecreator.html")
+
+@app.route("/datum-torles/<int:id>")
+def delete_date(id):
+    date_to_delete = Dates.query.get_or_404(id)
+    try:
+        db.session.delete(date_to_delete)
+        db.session.commit()
+        return redirect("/aktiv-datumok")
+    except:
+        return "Nem sikerült törölni a dátumot!"
+
+@app.route("/aktiv-datumok")
+def datelist():
+    return render_template("dates.html", values=Dates.query.all())
 
 
 if __name__ == "__main__":
