@@ -157,6 +157,6 @@ async def on_raw_reaction_remove(payload):
     await member.remove_roles(role)
 
 
-token = 'ODMxMTUzNTczNDc1MTIzMjIw.YHRGFg.vqLmqW_9ZYYtkBvBpUMO9yjGYm0'
+token = ''
 keep_alive()
 client.run(token)
