@@ -6,8 +6,12 @@ from discord.embeds import Embed
 import pandas as pd
 import json
 from keep_alive import keep_alive
+
+from discord import Intents
+
 import scrapetube
 from discord.ext import tasks
+
 
 from run import Commands, Dates
 
@@ -17,6 +21,9 @@ intents = discord.Intents.default()
 intents.members = True
 
 client = discord.Client(intents=intents)
+
+prefix = "!"
+bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 embed = discord.Embed()  
 
@@ -173,6 +180,41 @@ async def on_member_join(member):
   channel = guild.get_channel(813710089718071299)
   await channel.send(f'Üdv a szerveren {member.mention} ! :partying_face:') 
   await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+
+
+# Reaction alapján role adás a felhasználónak
+@client.event
+async def on_raw_reaction_add(payload):
+  guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
+  if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186:
+    role = discord.utils.get(guild.roles, name="Mérnökinfó")
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    #  if member is not None:
+    await member.add_roles(role)
+  if payload.emoji.name == "🔴" and payload.message_id == 918833217082114068:
+    role = discord.utils.get(guild.roles, name="Gépész")
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    #  if member is not None:
+    await member.add_roles(role)
+  if payload.emoji.name == "🔴" and payload.message_id == 918833269775138916:
+    role = discord.utils.get(guild.roles, name="Gazdinfó")
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    #  if member is not None:
+    await member.add_roles(role)
+
+@client.event
+async def on_raw_reaction_remove(payload):
+  guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
+
+  if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186: 
+    role = discord.utils.get(guild.roles, name="Mérnökinfó")
+    #if role is not None:
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+     # if member is not None:
+    await member.remove_roles(role)
 
 
 #NE PUSHOLD
