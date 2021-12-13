@@ -5,7 +5,7 @@ from marshmallow import fields, post_load, post_dump
 import json
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from marshmallow_sqlalchemy.schema import auto_field
@@ -182,6 +182,15 @@ def delete_date(id):
 
 @app.route("/aktiv-datumok")
 def datelist():
+    dates = Dates.query.all()
+    now = datetime.now()
+    for date in dates:
+        if date.date < now:
+            try:
+                db.session.delete(date)
+                db.session.commit()
+            except:
+                return "nem sikerült a törlés"
     return render_template("dates.html", values=Dates.query.all())
 
 
