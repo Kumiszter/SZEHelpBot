@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 import discord
 import os
 from discord import message
@@ -34,7 +34,7 @@ embed = discord.Embed()
 commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
 #időintervallum 24h?
-@tasks.loop(seconds=20)
+@tasks.loop(hours=24)
 async def checkforvideos():
   videos = scrapetube.get_channel("UChSdMh3jciQ7LyGTFQ7fvGQ", sleep=30, limit=3)
   valami =[]
@@ -57,7 +57,7 @@ async def checkforvideos():
       await discord_channel.send(msg)
 
 #időintervallum 24h?
-@tasks.loop(seconds=40)
+@tasks.loop(hours=24)
 async def checkfordates():
   dates = Dates.query.all()
   date_now = datetime.today()
@@ -92,10 +92,6 @@ async def on_message(message):
     embedVar = discord.Embed(title="SZE Térkép", description="", color=0x00ff00)
     embedVar.set_image(url="https://cdn.discordapp.com/attachments/255085444507762688/892750999729627177/terkep.png")
     await message.channel.send(embed=embedVar)
-
-  if msg.startswith("hol van"):
-    ##ide fognak jönni a különböző képek, amiken be lesz jelölve a kérdezett helység
-    await message.channel.send("terkep")
 
   if msg.startswith('!neptun'):
     embedVar = discord.Embed(title="Működő Neptun linkek: ", description="", color=0x00ff00)

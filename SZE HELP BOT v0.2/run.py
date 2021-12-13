@@ -1,11 +1,11 @@
-from flask import Flask, redirect, url_for, render_template, request, session, flash
+from flask import Flask, redirect, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from marshmallow import fields, post_load, post_dump 
 import json
 
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 from marshmallow_sqlalchemy.schema import auto_field
@@ -148,19 +148,18 @@ def datecreator():
     if not request.method == 'POST':
       return render_template("datecreator.html")
     dates_schema = DatesSchema(many=False)
-    valami = json.dumps(data)
-    valami2 = json.loads(valami)
+    string_data = json.dumps(data)
+    dict_data = json.loads(string_data)
     try:
-        valami2['date'] = datetime.strptime(valami2['date'],'%Y.%m.%d')
+        dict_data['date'] = datetime.strptime(dict_data['date'],'%Y.%m.%d')
     except:
         flash('rossz datum formatum (év.hónap.nap)' ,category='error')
         return render_template("datecreator.html")
-    if valami2['date'] < datetime.today():
+    if dict_data['date'] < datetime.today():
         flash('csak jövőbeni dátumot lehet megadni ', category='error')
         return render_template("datecreator.html")
-    dict_tpye = (dates_schema.dump(valami2))
+    dict_tpye = (dates_schema.dump(dict_data))
     string_type = (json.dumps(dict_tpye))
-    print(string_type)
     try:
         new_date = dates_schema.loads(string_type)
         db.session.add(new_date)
