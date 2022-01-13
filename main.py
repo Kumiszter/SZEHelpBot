@@ -12,8 +12,9 @@ from discord import Intents
 import scrapetube
 from discord.ext import tasks
 
+import key
 
-from run import Commands, Dates
+from run import Commands, Dates, Greetings
 
 from discord.ext import commands
 
@@ -26,8 +27,6 @@ prefix = "!"
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 embed = discord.Embed()  
-
-
 
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
 #be vannak ezek kódolva cuccba ezért nem találja meg query
@@ -178,7 +177,10 @@ async def on_message(message):
 async def on_member_join(member):
   guild = client.get_guild(813710089718071296)
   channel = guild.get_channel(813710089718071299)
-  await channel.send(f'Üdv a szerveren {member.mention} ! :partying_face:') 
+  if Greetings.query.first().message == "":
+    await channel.send(f'Üdv a szerveren {member.mention} :partying_face:') 
+  else:
+    await channel.send(f'{Greetings.query.first().message} {member.mention}') 
   await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
 
 
@@ -218,6 +220,6 @@ async def on_raw_reaction_remove(payload):
 
 
 #NE PUSHOLD
-token = ''
+
 keep_alive()
-client.run(token)
+client.run(key.TOKEN)
