@@ -178,16 +178,21 @@ async def on_member_join(member):
   guild = client.get_guild(813710089718071296)
   channel = guild.get_channel(813710089718071299)
   # Channel message
-  if Welcome.query.first().message == "":
-    await channel.send(f'Üdv a szerveren {member.mention} :partying_face:')
+  if Welcome.query.first().send_channel:
+    if Welcome.query.first().message == "":
+      await channel.send(f'Üdv a szerveren {member.mention} :partying_face:')
+    else:
+      await channel.send(f'{Welcome.query.first().message} {member.mention}')
   else:
-    await channel.send(f'{Welcome.query.first().message} {member.mention}')
+    print("NO CHANNEL MESSAGE")    
   # Direct message
-  if Welcome.query.first().direct_message == "":
-    await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+  if Welcome.query.first().send_dm:
+    if Welcome.query.first().direct_message == "":
+      await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+    else:
+      await member.send(f'{Welcome.query.first().direct_message} {member.mention}')
   else:
-    await member.send(f'{Welcome.query.first().direct_message} {member.mention}')
-
+    print("NO DM")
 
 # Reaction alapján role adás a felhasználónak
 @client.event
