@@ -14,7 +14,7 @@ from discord.ext import tasks
 
 import key
 
-from run import Commands, Dates, Greetings
+from run import Commands, Dates, Welcome
 
 from discord.ext import commands
 
@@ -177,11 +177,16 @@ async def on_message(message):
 async def on_member_join(member):
   guild = client.get_guild(813710089718071296)
   channel = guild.get_channel(813710089718071299)
-  if Greetings.query.first().message == "":
-    await channel.send(f'Üdv a szerveren {member.mention} :partying_face:') 
+  # Channel message
+  if Welcome.query.first().message == "":
+    await channel.send(f'Üdv a szerveren {member.mention} :partying_face:')
   else:
-    await channel.send(f'{Greetings.query.first().message} {member.mention}') 
-  await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+    await channel.send(f'{Welcome.query.first().message} {member.mention}')
+  # Direct message
+  if Welcome.query.first().direct_message == "":
+    await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+  else:
+    await member.send(f'{Welcome.query.first().direct_message} {member.mention}')
 
 
 # Reaction alapján role adás a felhasználónak

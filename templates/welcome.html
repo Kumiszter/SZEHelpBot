@@ -4,20 +4,28 @@
 {% block content %}
 <div class="gradientbackground">
     <div class="container col-xxl-8 px-4 py-5">
-        <h4>Channel - Üdvözlő üzenet beállítása<h4>
         <form method="POST" action="/udvozlo-uzenet">
+            <h4>Channel - Üdvözlő üzenet beállítása<h4>
             <div class="input-group mb-3">
                 <span class="input-group-text" id="message">Üdvözlő üzenet</span>
                 <input type="text" name="message" class="form-control" placeholder="Üdvözöllek a szerveren *új tag*!" aria-label="message" value="{{ welcome_update.message }}">
+            </div>
+            <div class="examplepic shadow-sm mx-auto" style="width: 50%; height: 200px; border-radius: 21px 21px 21px 21px">
+                <img src="../static/custom_greeting.png" class="d-block mx-lg-auto img-fluid" alt="Példa" width="450" loading="lazy">
+            </div>
+            <h4>DM - Üdvözlő üzenet beállítása<h4>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="direct_message">Üdvözlő üzenet</span>
+                <input type="text" name="direct_message" class="form-control" placeholder="Üdvözöllek a *szerverünk* szerveren, *új tag*!   Az elérhető parancsokat a !help segítségével tudod megtekinteni." aria-label="direct_message" value="{{ welcome_update.direct_message }}">
+            </div>
+            <div class="examplepic shadow-sm mx-auto" style="width: 35%">
+                <img src="../static/welcome_dm.jpg" class="d-block mx-lg-auto img-fluid" alt="Példa" width="450" loading="lazy">
             </div>
             <div class="input-group pt-4">
                 <span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Módosítás</button></span>
             </div>
         </form>
-        <div class="examplepic shadow-sm mx-auto" style="width: 50%; height: 200px; border-radius: 21px 21px 21px 21px">
-            <img src="../static/custom_greeting.png" class="d-block mx-lg-auto img-fluid" alt="Példa" width="450" loading="lazy">
-        </div>
-        <a href="dm_welcome.html">DM - Üdvözlő üzenet beállítása</a>
+        <!-- <a href="dm_welcome.html">DM - Üdvözlő üzenet beállítása</a> -->
     </div>
 </div>
 {% endblock %}

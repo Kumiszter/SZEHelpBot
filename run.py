@@ -50,11 +50,13 @@ class Dates(db.Model):
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 class Welcome(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(100), nullable=False, unique=True)
+    message = db.Column(db.String(100))
+    direct_message = db.Column(db.String(100))
     def __repr__(self):
-        return '<Name %r>' % self.message
-    def __init__(self, message):
+        return '<Name %r>' % self.id
+    def __init__(self, message, direct_message):
         self.message = message
+        self.direct_message = direct_message
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 class DatesSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -87,24 +89,7 @@ class CommandsSchema(ma.SQLAlchemySchema):
             if data[field] == "":
                 data[field] = None
         return data
-#------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
-class WelcomeSchema(ma.SQLAlchemySchema):
-    class Meta:
-        model = Welcome
-    id = auto_field()
-    message = auto_field(Required=True) 
 
-    @post_load
-    def make_message(self, data, **kwargs):
-        return Welcome(**data)
-
-    @post_dump
-    def change_string_to_none(self, data, **kwargs):
-        for field in data:
-            if data[field] == "":
-                data[field] = None
-        return data        
-#------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 default_commands = ["!terkep", "!neptun", "!gyujtoszamla", "!linkek", "!to", "!datumok", "!szoctam"]
 
 
@@ -222,66 +207,17 @@ def datelist():
 @app.route("/udvozlo-uzenet", methods=['GET', 'POST'])
 def welcome():
     welcome_update = Welcome.query.first()
-
-    # command_to_update = Commands.query.get_or_404(id)
-    # if request.method == "POST":
-    #     command_to_update.command = request.form["command"]
-    #     command_to_update.title = request.form["title"]
-    #     command_to_update.name = request.form["name"]
-    #     command_to_update.output = request.form["output"]
-
-    #     try:
-    #         db.session.commit()
-    #         return redirect("/aktiv-parancsok")
-    #     except:
-    #         return "Nem sikerült módosítani a parancsot!"
-    # else:
-    #     return render_template("update.html", command_to_update=command_to_update)
-
-#-----------------------------MINTA------------------------------------
-    # alap_commands = default_commands
-    # data = request.form
-    # if not request.method == 'POST':
-    #   return render_template("commandcreator.html")
-    # if data['command'] in alap_commands:
-    #   flash('alap command nev', category='error')
-    #   return render_template("commandcreator.html")
-    # if not data['command'].startswith('!'):
-    #   flash('commandnak "!"-kell kezdodnie', category='error')
-    #   return render_template("commandcreator.html")
-    # commands_schema = CommandsSchema()
-    # dict_tpye = (commands_schema.dump(data))
-    # string_type = (json.dumps(dict_tpye))
-    # try:
-    #   new_command = commands_schema.loads(string_type)
-    #   db.session.add(new_command)
-    #   db.session.commit()
-    #   return redirect('/aktiv-parancsok')
-#-----------------------------MINTA------------------------------------
-#-----------------------------VALAMI-----------------------------------
-    # if request.method == "POST":
-    #     welcome = request.form
-    #     welcome_schema = WelcomeSchema()
-    #     dict_tpye = (welcome_schema.dump(welcome))
-    #     string_type = (json.dumps(dict_tpye))
-    #     try:
-    #         new_welcome = welcome_schema.loads(string_type)
-    #         db.session.add(new_welcome)
-    #         db.session.commit()
-    #         print("fasza")
-    #         return redirect('/udvozlo-uzenet')
-    #     except:
-    #         return "Nem sikerült módosítani a parancsot!"
-    # else:
-    #     return render_template("welcome.html", welcome_update=welcome_update)
-#-----------------------------VALAMI-----------------------------------
+    if welcome_update is None:
+        welcome_update = Welcome("", "")
     if request.method == "POST":
         welcome_update.message = request.form["message"]
+        welcome_update.direct_message = request.form["direct_message"]
+        db.session.add(welcome_update)
         db.session.commit()
-        return redirect('/udvozlo-uzenet')
+        return redirect("/udvozlo-uzenet")
     else:
         return render_template("welcome.html", welcome_update=welcome_update)
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 if __name__ == "__main__":
-    #db.create_all()
+    db.create_all()
     app.run(debug=True)
