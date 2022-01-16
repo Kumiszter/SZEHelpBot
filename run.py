@@ -17,6 +17,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+# @app.before_first_request
+# def create_tables():
+#     db.create_all()
 
 class Commands(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,7 +47,21 @@ class Dates(db.Model):
     def __init__(self, date, event):
         self.date = date
         self.event = event
-
+#------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
+class Welcome(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(100))
+    direct_message = db.Column(db.String(100))
+    send_channel = db.Column(db.Boolean, unique=False, default=True)
+    send_dm = db.Column(db.Boolean, unique=False, default=True)
+    def __repr__(self):
+        return '<Name %r>' % self.id
+    def __init__(self, message, direct_message, send_channel, send_dm):
+        self.message = message
+        self.direct_message = direct_message
+        self.send_channel = send_channel
+        self.send_dm = send_dm
+#------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 class DatesSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Dates
@@ -76,7 +93,6 @@ class CommandsSchema(ma.SQLAlchemySchema):
             if data[field] == "":
                 data[field] = None
         return data
-        
 
 default_commands = ["!terkep", "!neptun", "!gyujtoszamla", "!linkek", "!to", "!datumok", "!szoctam"]
 
@@ -191,8 +207,37 @@ def datelist():
             except:
                 return "nem sikerült a törlés"
     return render_template("dates.html", values=Dates.query.all())
+#------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
+@app.route("/udvozlo-uzenet", methods=['GET', 'POST'])
+def welcome():
+    welcome_update = Welcome.query.first()
+    if welcome_update is None:
+        welcome_update = Welcome("", "", True, True)
 
+    if request.method == "POST":
+        # Channel üdvözlés legyen-e
+        if request.form.get('disable_channel'):
+            print("send channel message false")
+            welcome_update.send_channel = False
+        else:
+            print("send channel message true")
+            welcome_update.send_channel = True
+        # DM üdvözlés legyen-e
+        if request.form.get('disable_dm'):
+            print("send direct message false")
+            welcome_update.send_dm = False
+        else:
+            print("send direct message true")
+            welcome_update.send_dm = True 
 
+        welcome_update.message = request.form["message"]
+        welcome_update.direct_message = request.form["direct_message"]
+        db.session.add(welcome_update)
+        db.session.commit()
+        return render_template("welcome.html", welcome_update=welcome_update)
+    else:
+        return render_template("welcome.html", welcome_update=welcome_update)
+#------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 if __name__ == "__main__":
-    #db.create_all()
+    db.create_all()
     app.run(debug=True)

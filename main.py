@@ -12,8 +12,9 @@ from discord import Intents
 import scrapetube
 from discord.ext import tasks
 
+import key
 
-from run import Commands, Dates
+from run import Commands, Dates, Welcome
 
 from discord.ext import commands
 
@@ -26,8 +27,6 @@ prefix = "!"
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 embed = discord.Embed()  
-
-
 
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
 #be vannak ezek kódolva cuccba ezért nem találja meg query
@@ -178,9 +177,22 @@ async def on_message(message):
 async def on_member_join(member):
   guild = client.get_guild(813710089718071296)
   channel = guild.get_channel(813710089718071299)
-  await channel.send(f'Üdv a szerveren {member.mention} ! :partying_face:') 
-  await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
-
+  # Channel message
+  if Welcome.query.first().send_channel:
+    if Welcome.query.first().message == "":
+      await channel.send(f'Üdv a szerveren {member.mention} :partying_face:')
+    else:
+      await channel.send(f'{Welcome.query.first().message} {member.mention}')
+  else:
+    print("NO CHANNEL MESSAGE")    
+  # Direct message
+  if Welcome.query.first().send_dm:
+    if Welcome.query.first().direct_message == "":
+      await member.send(f'Üdvözöllek a {guild.name} szerveren, {member.name}!   Az elérhető parancsokat a !help segítségével tudod megtekinteni.')
+    else:
+      await member.send(f'{Welcome.query.first().direct_message} {member.mention}')
+  else:
+    print("NO DM")
 
 # Reaction alapján role adás a felhasználónak
 @client.event
@@ -218,6 +230,6 @@ async def on_raw_reaction_remove(payload):
 
 
 #NE PUSHOLD
-token = ''
+
 keep_alive()
-client.run(token)
+client.run(key.TOKEN)
