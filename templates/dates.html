@@ -19,6 +19,19 @@
 						<h5>Esemény: </h5>{{ item.event }} 
 					{% endfor %}
 				</ul>
+				<form method="POST" action="/aktiv-datumok">
+					<span class="input-group-select" id="param">Lista paraméter</span>
+                	<select name="param" id="dateparam">
+                    <option value="">Válassz parametert</option>
+                    <option value="1">Időtartam (napban)</option>
+                    <option value="0">Esemény (darabszámban)</option>
+                </select>
+				<div class="input-group mb-3">
+					<span class="input-group-text" id="event">Adat</span>
+					<input type="text" name="event" class="form-control" placeholder="1/2/3" aria-label="event">
+				</div>
+					<span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Megadás</button></span>
+				</div>
         </div>
     </div>
 </div>

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+{% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+         {{ message }}
+      {% endfor %}
+   {% endif %}
+{% endwith %}
+<div class="gradientbackground">
+    <div class="container col-xxl-8 px-4 py-5">
+        <h4>Reakció megadása szakokhoz<h4>
+        <p class="lead">
+            Minden szakhoz külön emojit válassz.
+        </p>
+        <form method="POST" action="/role-adas">
+            <div class="input-group mb-3">
+                <span class="input-group-select" id="emoji_minf_class">Mérnökinfó</span>
+                <select name="mernokinfo" id="mernokinfo">
+                    <option value="">Válassz emojit</option>
+                    <option value="computer">💻</option>
+                    <option value="wrench">🔧</option>
+                    <option value="moneybag">💰</option>
+                    <option value="train">🚆</option>
+                    <option value="const_worker">👷</option>
+                    <option value="trumpet">🎺</option>
+
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-select" id="emoji_ge_class">Gépész</span>
+                <select name="gepesz" id="gepesz">
+                    <option value="">Válassz emojit</option>
+                    <option value="computer">💻</option>
+                    <option value="wrench">🔧</option>
+                    <option value="moneybag">💰</option>
+                    <option value="train">🚆</option>
+                    <option value="const_worker">👷</option>
+                    <option value="trumpet">🎺</option>
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-select" id="emoji_ginf_class">Gazdinfó</span>
+                <select name="gazdinfo" id="gazdinfo">
+                    <option value="">Válassz emojit</option>
+                    <option value="computer">💻</option>
+                    <option value="wrench">🔧</option>
+                    <option value="moneybag">💰</option>
+                    <option value="train">🚆</option>
+                    <option value="const_worker">👷</option>
+                    <option value="trumpet">🎺</option>
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-select" id="emoji_jm_class">Járműmérnök</span>
+                <select name="jarmumernok" id="jarmumernok">
+                    <option value="">Válassz emojit</option>
+                    <option value="computer">💻</option>
+                    <option value="wrench">🔧</option>
+                    <option value="moneybag">💰</option>
+                    <option value="train">🚆</option>
+                    <option value="const_worker">👷</option>
+                    <option value="trumpet">🎺</option>
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-select" id="emoji_em_class">Építészmérnök</span>
+                <select name="epiteszmernok" id="epiteszmernok">
+                    <option value="">Válassz emojit</option>
+                    <option value="computer">💻</option>
+                    <option value="wrench">🔧</option>
+                    <option value="moneybag">💰</option>
+                    <option value="train">🚆</option>
+                    <option value="const_worker">👷</option>
+                    <option value="trumpet">🎺</option>
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-select" id="emoji_t_class">Trombitás</span>
+                <select name="trombitas" id="trombitas">
+                    <option value="">Válassz emojit</option>
+                    <option value="computer">💻</option>
+                    <option value="wrench">🔧</option>
+                    <option value="moneybag">💰</option>
+                    <option value="train">🚆</option>
+                    <option value="const_worker">👷</option>
+                    <option value="trumpet">🎺</option>
+                </select>
+            </div>
+                <span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Reaccc-role adása</button></span>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

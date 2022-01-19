@@ -1,3 +1,6 @@
+from asyncio import FastChildWatcher
+from crypt import methods
+from typing_extensions import Required
 from flask import Flask, redirect, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -5,7 +8,7 @@ from marshmallow import fields, post_load, post_dump
 import json
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 from marshmallow_sqlalchemy.schema import auto_field
@@ -38,12 +41,14 @@ class Commands(db.Model):
         self.name = name
         self.output = output
 
-
 class Dates(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     date = db.Column(db.DateTime, nullable=False, unique=True)
     event = db.Column(db.String(100), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.now)
+    #param 1=időtartam 0=esemény
+    param = db.Column(db.Integer,default=1, nullable=False)
+
     def __init__(self, date, event):
         self.date = date
         self.event = event
@@ -62,17 +67,26 @@ class Welcome(db.Model):
         self.send_channel = send_channel
         self.send_dm = send_dm
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
+class Emojis(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    role = db.Column(db.String(100), nullable=False)
+    icon = db.Column(db.String(100), nullable=False)
+
+    def __init__(self, role, icon):
+        self.role = role
+        self.icon = icon
+
 class DatesSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Dates
     id = auto_field()
     date = fields.DateTime('%Y.%b.%d', Required=True)	
     event = auto_field(Required=True)
+    param = auto_field(Required=True)
 
     @post_load
     def make_date(self , data, **kwargs):
          return Dates(**data)
-
 
 class CommandsSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -93,6 +107,17 @@ class CommandsSchema(ma.SQLAlchemySchema):
             if data[field] == "":
                 data[field] = None
         return data
+
+class EmojisSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Emojis
+    id = auto_field()
+    icon = auto_field(Required=True)
+    role = auto_field(Required=True)
+
+    @post_load
+    def make_date(self , data, **kwargs):
+         return Emojis(**data)
 
 default_commands = ["!terkep", "!neptun", "!gyujtoszamla", "!linkek", "!to", "!datumok", "!szoctam"]
 
@@ -195,18 +220,55 @@ def delete_date(id):
     except:
         return "Nem sikerült törölni a dátumot!"
 
-@app.route("/aktiv-datumok")
+#TODO szépíteni
+@app.route("/aktiv-datumok", methods=['POST','GET'])
 def datelist():
-    dates = Dates.query.all()
-    now = datetime.now()
-    for date in dates:
-        if date.date < now:
-            try:
-                db.session.delete(date)
-                db.session.commit()
-            except:
-                return "nem sikerült a törlés"
-    return render_template("dates.html", values=Dates.query.all())
+    data = request.form
+    dates_schema = DatesSchema(many=False)
+    string_data = json.dumps(data)
+    dict_data = json.loads(string_data)
+    dict_tpye = (dates_schema.dump(dict_data))
+    if not request.method == 'POST':          
+        dates = Dates.query.all()
+        now = datetime.now()
+        for date in dates:
+            if date.date < now:
+                try:
+                    db.session.delete(date)
+                    db.session.commit()
+                except:
+                    return "nem sikerült a törlés"
+        return render_template("dates.html", values=Dates.query.all())
+    else:
+        if dict_tpye['param']:
+            print("időtartam szerint")
+            dates = Dates.query.all()
+            now = datetime.now()
+            day_param = int(dict_tpye['event'])
+            now_plus = datetime.today().strftime('%Y-%m-%d')
+            until = now + timedelta(days=day_param)
+            for date in dates:
+                if date.date < now:
+                    try:
+                        db.session.delete(date)
+                        db.session.commit()
+                    except:
+                        return "nem sikerült a törlés"
+            return render_template("dates.html", values=Dates.query.filter(
+                (Dates.date.between(now_plus, until))))
+        else:
+            print("esemény szerint")
+            dates = Dates.query.all()
+            now = datetime.now()
+            for date in dates:
+                if date.date < now:
+                    try:
+                        db.session.delete(date)
+                        db.session.commit()
+                    except:
+                        return "nem sikerült a törlés"
+        return render_template("dates.html", values=Dates.query.limit(dict_tpye['event']).all())
+
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 @app.route("/udvozlo-uzenet", methods=['GET', 'POST'])
 def welcome():
@@ -238,6 +300,26 @@ def welcome():
     else:
         return render_template("welcome.html", welcome_update=welcome_update)
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
+#TODO szebben/hibakezeles/input kezeles
+@app.route("/role-adas", methods=['GET', 'POST'])
+def role():
+    if request.method == 'POST':
+        data = request.form
+        string_data = json.dumps(data)
+        dict_data = json.loads(string_data)
+        for key,_ in dict_data.items():
+            emoji = Emojis.query.filter_by(role=key).all()
+            for e in emoji:
+                e.icon = dict_data[key]
+        try:
+            db.session.commit()
+        except:
+            print("hiba")
+        return render_template("role.html")
+    return render_template("role.html")
+
+
+
 if __name__ == "__main__":
     db.create_all()
     app.run(debug=True)

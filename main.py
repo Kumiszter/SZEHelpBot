@@ -14,7 +14,7 @@ from discord.ext import tasks
 
 import key
 
-from run import Commands, Dates, Welcome
+from run import Commands, Dates, Emojis, Welcome
 
 from discord.ext import commands
 
@@ -31,6 +31,20 @@ embed = discord.Embed()
 ##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
 #be vannak ezek kódolva cuccba ezért nem találja meg query
 commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
+
+emojis = { "💻": "computer"  ,
+           "🔧":"wrench" ,
+           "💰":"moneybag" ,
+          "🚆":"train" ,
+          "👷" : "const_worker" ,
+           "🎺": "trumpet" }
+           
+roles = {"mernokinfo" : "Mérnökinfó",
+          "gepesz" : "Gépész",
+          "gazdinfo" : "Gazdinfó",
+          "jarmumernok": "Járműmérnök",
+          "epiteszmernok" : "Építészmérnök",
+          "trombitas" : "Trombitás" }
 
 #időintervallum 24h?
 @tasks.loop(hours=24)
@@ -67,11 +81,10 @@ async def checkfordates():
     discord_channel = client.get_channel(831159464777744425)
   await discord_channel.send(embed=embedVar)
 
-
 @client.event
 async def on_ready():
-  checkfordates.start()
-  checkforvideos.start()
+  #checkfordates.start()
+  #checkforvideos.start()
   print('we have logged in as {0.user}'.format(client))
 
 @client.event
@@ -169,7 +182,7 @@ async def on_message(message):
     await message.channel.send(embed=embedVar)
   
   if msg[0] == "!":
-    emoji ='🥶'
+    emoji = "🥶"
     await message.add_reaction(emoji)
 
 # Üdvözlő üzenet új felhasználónak
@@ -194,42 +207,34 @@ async def on_member_join(member):
   else:
     print("NO DM")
 
-# Reaction alapján role adás a felhasználónak
+#TODO szebben
 @client.event
 async def on_raw_reaction_add(payload):
   guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
-  if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186:
-    role = discord.utils.get(guild.roles, name="Mérnökinfó")
-    #if role is not None:
-    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-    #  if member is not None:
-    await member.add_roles(role)
-  if payload.emoji.name == "🔴" and payload.message_id == 918833217082114068:
-    role = discord.utils.get(guild.roles, name="Gépész")
-    #if role is not None:
-    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-    #  if member is not None:
-    await member.add_roles(role)
-  if payload.emoji.name == "🔴" and payload.message_id == 918833269775138916:
-    role = discord.utils.get(guild.roles, name="Gazdinfó")
-    #if role is not None:
-    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-    #  if member is not None:
-    await member.add_roles(role)
-
+  emoji = (payload.emoji.name)
+  stemoji = (str(emoji))
+  found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
+  #print(found_emoji)
+  ro = roles[found_emoji[0].role]
+  role = discord.utils.get(guild.roles, name=ro)
+  #print(role)
+  member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+  #print(member)
+  await member.add_roles(role)
+#TODO szebben
 @client.event
 async def on_raw_reaction_remove(payload):
   guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
-
-  if payload.emoji.name == "🔴" and payload.message_id == 918833141408477186: 
-    role = discord.utils.get(guild.roles, name="Mérnökinfó")
-    #if role is not None:
-    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-     # if member is not None:
-    await member.remove_roles(role)
-
-
-#NE PUSHOLD
+  emoji = (payload.emoji.name)
+  stemoji = (str(emoji))
+  found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
+  #print(found_emoji)
+  ro = roles[found_emoji[0].role]
+  role = discord.utils.get(guild.roles, name=ro)
+  #print(role)
+  member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+  #print(member)
+  await member.remove_roles(role)
 
 keep_alive()
 client.run(key.TOKEN)
