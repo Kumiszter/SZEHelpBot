@@ -47,10 +47,10 @@ roles = {"mernokinfo" : "Mérnökinfó",
           "trombitas" : "Trombitás" }
 
 
-#  task_loop = Channels.query.filter_by(event='task_loop').all()
+#  task_loop = int((Channels.query.filter_by(event='task_loop').all())[0].channel_id)
 #  print(task_loop[0].channel_id)
-#időintervallum 24h?
-@tasks.loop(hours=24)
+#lol
+@tasks.loop(hours=int((Channels.query.filter_by(event='task_loop').all())[0].channel_id))
 async def checkforvideos():
   videos = scrapetube.get_channel("UChSdMh3jciQ7LyGTFQ7fvGQ", sleep=30, limit=3)
   valami =[]
@@ -75,7 +75,7 @@ async def checkforvideos():
       await discord_channel.send(msg)
 
 #időintervallum 24h?
-@tasks.loop(hours=24)
+@tasks.loop(hours=int((Channels.query.filter_by(event='task_loop').all())[0].channel_id))
 async def checkfordates():
   event_param = EventParam.query.all()
   if event_param[0].type:
@@ -98,7 +98,7 @@ async def checkfordates():
 @client.event
 async def on_ready():
   #checkfordates.start()
-  #checkforvideos.start()
+  checkforvideos.start()
   print('we have logged in as {0.user}'.format(client))
 
 
