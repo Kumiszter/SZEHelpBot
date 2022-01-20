@@ -1,5 +1,6 @@
 from asyncio import FastChildWatcher
 from crypt import methods
+from operator import iconcat
 from typing_extensions import Required
 from flask import Flask, redirect, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -46,12 +47,20 @@ class Dates(db.Model):
     date = db.Column(db.DateTime, nullable=False, unique=True)
     event = db.Column(db.String(100), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.now)
-    #param 1=időtartam 0=esemény
-    param = db.Column(db.Integer,default=1, nullable=False)
 
     def __init__(self, date, event):
         self.date = date
         self.event = event
+
+class EventParam(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    #type 0=esemény 1=időtartam
+    type = db.Column(db.Integer, nullable=False)
+    input_int = db.Column(db.Integer, nullable=False)
+
+    def __init__(self,type,input_int):
+        self.type = type
+        self.input_int = input_int
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 class Welcome(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -82,7 +91,6 @@ class DatesSchema(ma.SQLAlchemySchema):
     id = auto_field()
     date = fields.DateTime('%Y.%b.%d', Required=True)	
     event = auto_field(Required=True)
-    param = auto_field(Required=True)
 
     @post_load
     def make_date(self , data, **kwargs):
@@ -118,6 +126,13 @@ class EmojisSchema(ma.SQLAlchemySchema):
     @post_load
     def make_date(self , data, **kwargs):
          return Emojis(**data)
+
+class EventParamSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = EventParam
+    id = auto_field()
+    type = auto_field(Required=True)
+    input_int = auto_field(Required=True)
 
 default_commands = ["!terkep", "!neptun", "!gyujtoszamla", "!linkek", "!to", "!datumok", "!szoctam"]
 
@@ -220,14 +235,9 @@ def delete_date(id):
     except:
         return "Nem sikerült törölni a dátumot!"
 
-#TODO szépíteni
+#TODO aktuális paramétert kiírni
 @app.route("/aktiv-datumok", methods=['POST','GET'])
 def datelist():
-    data = request.form
-    dates_schema = DatesSchema(many=False)
-    string_data = json.dumps(data)
-    dict_data = json.loads(string_data)
-    dict_tpye = (dates_schema.dump(dict_data))
     if not request.method == 'POST':          
         dates = Dates.query.all()
         now = datetime.now()
@@ -240,34 +250,17 @@ def datelist():
                     return "nem sikerült a törlés"
         return render_template("dates.html", values=Dates.query.all())
     else:
-        if dict_tpye['param']:
-            print("időtartam szerint")
-            dates = Dates.query.all()
-            now = datetime.now()
-            day_param = int(dict_tpye['event'])
-            now_plus = datetime.today().strftime('%Y-%m-%d')
-            until = now + timedelta(days=day_param)
-            for date in dates:
-                if date.date < now:
-                    try:
-                        db.session.delete(date)
-                        db.session.commit()
-                    except:
-                        return "nem sikerült a törlés"
-            return render_template("dates.html", values=Dates.query.filter(
-                (Dates.date.between(now_plus, until))))
-        else:
-            print("esemény szerint")
-            dates = Dates.query.all()
-            now = datetime.now()
-            for date in dates:
-                if date.date < now:
-                    try:
-                        db.session.delete(date)
-                        db.session.commit()
-                    except:
-                        return "nem sikerült a törlés"
-        return render_template("dates.html", values=Dates.query.limit(dict_tpye['event']).all())
+        data = request.form
+        dates = Dates.query.all()
+        curr_param = EventParam.query.all()
+        curr_param[0].input_int = data['input_int']
+        curr_param[0].type = data['param']
+        try:
+            db.session.commit()
+        except:
+            print("error")
+            db.session.rollback()
+        return render_template("dates.html", values=Dates.query.all())
 
 #------------------------------------------ üdvözlő üzenet blokk -----------------------------------------------------
 @app.route("/udvozlo-uzenet", methods=['GET', 'POST'])
@@ -315,6 +308,7 @@ def role():
             db.session.commit()
         except:
             print("hiba")
+            db.session.rollback()
         return render_template("role.html")
     return render_template("role.html")
 

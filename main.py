@@ -14,7 +14,7 @@ from discord.ext import tasks
 
 import key
 
-from run import Commands, Dates, Emojis, Welcome
+from run import Commands, Dates, Emojis, EventParam, Welcome, timedelta
 
 from discord.ext import commands
 
@@ -72,7 +72,15 @@ async def checkforvideos():
 #időintervallum 24h?
 @tasks.loop(hours=24)
 async def checkfordates():
-  dates = Dates.query.all()
+  event_param = EventParam.query.all()
+  if event_param[0].type:
+    now = datetime.now()
+    #day_param = nt(dict_tpye['event'])i
+    now_plus = datetime.today().strftime('%Y-%m-%d')
+    until = now + timedelta(days=(event_param[0].input_int))
+    dates = Dates.query.filter((Dates.date.between(now_plus, until)))
+  else:
+    dates = Dates.query.limit((event_param[0].input_int)).all()
   date_now = datetime.today()
   embedVar = discord.Embed(title="Összes egyéni dátum",description="A weboldalon beállított dátumok és hozzájuk tartozó események", color=0xcc0000)
   for date in dates:
