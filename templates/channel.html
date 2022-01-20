@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Channelek és task_loop megadása{% endblock %}
+{% block content %}
+<div class="gradientbackground">
+    <div class="container col-xxl-8 px-4 py-5">
+        <h4>Channel megadása eventekhez<h4>
+        <p class="lead">
+            Ne legyen üres POST.
+        </p>
+            <div class="row flex-lg-row-reverse align-items-center g-5 py-5"></div>
+            <form method="POST" action="/channel">
+                <span class="input-group-select" id="event_class">Event</span>
+                <select name="event" id="event">
+                <option value="">Válassz eventet</option>
+                <option value="youtube">Youtube</option>
+                <option value="dates">Dates</option>
+                <option value="role">Role-reacc</option>
+                <option value="task_loop">Task loop</option>
+            </select>
+            <span class="input-group-select" id="channel_class">Channel</span>
+            <select name="channel" id="channel">
+            <option value="">Válassz channelt</option>
+            <option value="813710089718071299">#general</option>
+            <option value="831159464777744425">#test</option>
+            <option value="918825577400643584">#role</option>
+            </select>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="task_loop_time">Task loop ideje</span>
+                <input type="text" name="task_loop_time" class="form-control" placeholder="egész pozitív számmal/órában" aria-label="task_loop_time">
+            </div>
+                <span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Beállítás</button></span>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

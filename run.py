@@ -81,9 +81,18 @@ class Emojis(db.Model):
     role = db.Column(db.String(100), nullable=False)
     icon = db.Column(db.String(100), nullable=False)
 
-    def __init__(self, role, icon):
+    def __init__(self, role, icon,channel_id):
         self.role = role
         self.icon = icon
+
+class Channels(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event = db.Column(db.String(100), nullable=False)
+    channel_id = db.Column(db.String(100), nullable=False)
+
+    def __init__(self,event,channel_id):
+        self.event = event
+        self.channel_id = channel_id
 
 class DatesSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -312,8 +321,23 @@ def role():
         return render_template("role.html")
     return render_template("role.html")
 
-
-
+@app.route("/channel", methods=['GET', 'POST'])
+def chanel():
+    if request.method == 'POST':
+        data = request.form
+        found_event = Channels.query.filter_by(event=data['event']).all()
+        if found_event:
+            if not found_event[0].event == 'task_loop':
+                found_event[0].channel_id = data['channel']
+            else:
+                found_event[0].channel_id = data['task_loop_time']
+            try:
+                db.session.commit()
+            except:
+                print("error")
+                db.session.rollback()
+        return render_template("channel.html")
+    return render_template("channel.html")
 if __name__ == "__main__":
     db.create_all()
     app.run(debug=True)

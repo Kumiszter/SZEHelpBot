@@ -14,7 +14,7 @@ from discord.ext import tasks
 
 import key
 
-from run import Commands, Dates, Emojis, EventParam, Welcome, timedelta
+from run import Commands, Dates, Emojis, EventParam, Welcome, timedelta, Channels
 
 from discord.ext import commands
 
@@ -46,6 +46,9 @@ roles = {"mernokinfo" : "Mérnökinfó",
           "epiteszmernok" : "Építészmérnök",
           "trombitas" : "Trombitás" }
 
+
+#  task_loop = Channels.query.filter_by(event='task_loop').all()
+#  print(task_loop[0].channel_id)
 #időintervallum 24h?
 @tasks.loop(hours=24)
 async def checkforvideos():
@@ -64,7 +67,9 @@ async def checkforvideos():
       with open("yt_data.json", "w") as f:
         json.dump(data, f)
       #hardcode ink?
-      discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
+      #discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
+      channel_id = Channels.query.filter_by(event='youtube').all()
+      discord_channel_id = channel_id[0].channel_id
       discord_channel = client.get_channel(int(discord_channel_id))
       msg = f"@everyone {data[str(youtube_channel)]['channel_name']} feltöltött egy új youtube videót! Itt a hozzá tartozó link: {'https://www.youtube.com/watch?v='+latest_video_url}"
       await discord_channel.send(msg)
@@ -75,7 +80,6 @@ async def checkfordates():
   event_param = EventParam.query.all()
   if event_param[0].type:
     now = datetime.now()
-    #day_param = nt(dict_tpye['event'])i
     now_plus = datetime.today().strftime('%Y-%m-%d')
     until = now + timedelta(days=(event_param[0].input_int))
     dates = Dates.query.filter((Dates.date.between(now_plus, until)))
@@ -86,7 +90,9 @@ async def checkfordates():
   for date in dates:
     diff = date.date - date_now
     embedVar.add_field(name=date.event, value=f"{diff.days} napra van!", inline=False)
-    discord_channel = client.get_channel(831159464777744425)
+  channel_id = Channels.query.filter_by(event='dates').all()
+  discord_channel_id = channel_id[0].channel_id
+  discord_channel = client.get_channel(int(discord_channel_id))
   await discord_channel.send(embed=embedVar)
 
 @client.event
@@ -94,6 +100,7 @@ async def on_ready():
   #checkfordates.start()
   #checkforvideos.start()
   print('we have logged in as {0.user}'.format(client))
+
 
 @client.event
 async def on_message(message):
@@ -215,20 +222,19 @@ async def on_member_join(member):
   else:
     print("NO DM")
 
-#TODO szebben
 @client.event
 async def on_raw_reaction_add(payload):
-  guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
-  emoji = (payload.emoji.name)
-  stemoji = (str(emoji))
-  found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
-  #print(found_emoji)
-  ro = roles[found_emoji[0].role]
-  role = discord.utils.get(guild.roles, name=ro)
-  #print(role)
-  member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-  #print(member)
-  await member.add_roles(role)
+  channel = Channels.query.filter_by(event='role').all()
+  if (str(payload.channel_id)) == channel[0].channel_id:
+    guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
+    emoji = (payload.emoji.name)
+    stemoji = (str(emoji))
+    found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
+    ro = roles[found_emoji[0].role]
+    role = discord.utils.get(guild.roles, name=ro)
+    member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    await member.add_roles(role)
+
 #TODO szebben
 @client.event
 async def on_raw_reaction_remove(payload):
@@ -236,12 +242,9 @@ async def on_raw_reaction_remove(payload):
   emoji = (payload.emoji.name)
   stemoji = (str(emoji))
   found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
-  #print(found_emoji)
   ro = roles[found_emoji[0].role]
   role = discord.utils.get(guild.roles, name=ro)
-  #print(role)
   member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
-  #print(member)
   await member.remove_roles(role)
 
 keep_alive()
