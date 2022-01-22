@@ -1,7 +1,4 @@
-from asyncio import FastChildWatcher
-from crypt import methods
-from operator import iconcat
-from typing_extensions import Required
+import scrapetube
 from flask import Flask, redirect, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -93,6 +90,29 @@ class Channels(db.Model):
     def __init__(self,event,channel_id):
         self.event = event
         self.channel_id = channel_id
+
+class Youtube(db.Model):
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    channel_id = db.Column(db.String(100),nullable=False)
+    name = db.Column(db.String(100),nullable=False)
+    latest_video_url = db.Column(db.String(100),nullable=False)
+    videos = db.relationship("Video", cascade='all,delete, delete-orphan')
+
+    def __init__(self,name,channel_id,latest_video_url):
+        self.channel_id = channel_id
+        self.name = name
+        self.latest_video_url = latest_video_url
+
+class Video(db.Model):
+    id = db.Column(db.Integer,primary_key=True, autoincrement=True)
+    yt_id = db.Column(db.Integer,db.ForeignKey('youtube.id'))
+    title = db.Column(db.String(100),nullable=False) 
+    urls = db.Column(db.String(100), nullable=False)
+
+    def __init__(self,yt_id,title,urls):
+        self.yt_id = yt_id
+        self.title = title
+        self.urls = urls
 
 class DatesSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -309,10 +329,14 @@ def role():
         data = request.form
         string_data = json.dumps(data)
         dict_data = json.loads(string_data)
-        for key,_ in dict_data.items():
-            emoji = Emojis.query.filter_by(role=key).all()
-            for e in emoji:
-                e.icon = dict_data[key]
+        for key,data in dict_data.items():
+            if data != "":
+                emoji = Emojis.query.filter_by(role=key).all()
+                for e in emoji:
+                    e.icon = dict_data[key]
+            else:
+                flash('Üres role adat',category='error')
+                return render_template("role.html") 
         try:
             db.session.commit()
         except:
@@ -325,6 +349,9 @@ def role():
 def chanel():
     if request.method == 'POST':
         data = request.form
+        if data['event'] == '':
+            flash('Üresen hagyott mező',category='error')
+            return render_template("channel.html")
         found_event = Channels.query.filter_by(event=data['event']).all()
         if found_event:
             if not found_event[0].event == 'task_loop':
@@ -338,6 +365,59 @@ def chanel():
                 db.session.rollback()
         return render_template("channel.html")
     return render_template("channel.html")
+
+@app.route("/youtube", methods=['GET', 'POST'])
+def yt():
+    data = request.form
+    if request.method == 'POST' and data['yt_id'] != "":
+        found_channel = Youtube.query.filter_by(channel_id=data['yt_id']).first()
+        if not found_channel:
+            print("channel nem létezik még")
+            text = scrapetube.get_channel(data["yt_id"], sleep=30, limit=1)
+            search_text = []
+            for t in text:
+                search_text.append(t['videoId'])
+                search_text.append((t['title']['runs'][0]['text']))
+            channel_name = scrapetube.get_search(search_text[0], limit=1)
+            for c in channel_name:
+                new_name = (c['ownerText']['runs'][0]['text'])
+            new_channel = Youtube(new_name,data['yt_id'],search_text[0])
+            try:
+                db.session.add(new_channel)
+                db.session.commit()
+            except:
+                print("valami hiba")
+                db.session.rollback()
+            channel_id = Youtube.query.filter_by(channel_id=data['yt_id']).first()
+            channel = scrapetube.get_channel(data['yt_id'], sleep=30, limit=5)
+            latest_videos =[]
+            for video in channel:
+                title = (video['title']['runs'][0]['text'])
+                url = (video['videoId'])
+                latest_videos.append(url)
+                latest_videos.append(title)
+                new_video = Video(channel_id.id,title,url)
+                db.session.add(new_video)
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+                print("valami hiba")
+        return render_template("youtube.html", values=Youtube.query.all())
+    else:
+        flash('Üresen hagyott mező',category='error')
+        return render_template("youtube.html", values=Youtube.query.all())
+
+@app.route("/youtube-torles/<int:id>")
+def delete_youtube(id):
+    yt_to_delete = Youtube.query.get_or_404(id)
+    try:
+        db.session.delete(yt_to_delete)
+        db.session.commit()
+        return redirect("/youtube")
+    except:
+        return "Nem sikerült törölni a csatornát!"
+
 if __name__ == "__main__":
     db.create_all()
     app.run(debug=True)

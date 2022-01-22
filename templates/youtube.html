@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Youtube chatorna megadása{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+         {{ message }}
+      {% endfor %}
+   {% endif %}
+{% endwith %}
+<div class="gradientbackground">
+    <div class="container col-xxl-5 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                <h2>Aktív youtbe csatornák</h2>
+				<p class="lead">
+					Bemásolni channel-id weboldalról: https://commentpicker.com/youtube-channel-id.php
+				</p>
+				<ul class="list-group mt-1">
+	 				{% for item in values %}
+						<a href="/youtube-torles/{{item.id}}" class="btn btn-danger">Töröl</a>
+						<h5>Csatorna: </h5>{{ item.name }} 
+					{% endfor %}
+				</ul>
+				<form method="POST" action="/youtube">
+				<div class="input-group mb-3">
+					<span class="input-group-text" id="yt_id">Csatorna Id</span>
+					<input type="text" name="yt_id" class="form-control" placeholder="1/2/3" aria-label="yt_id">
+				</div>
+					<span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Megadás</button></span>
+				</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

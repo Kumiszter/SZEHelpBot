@@ -9,12 +9,11 @@ from keep_alive import keep_alive
 
 from discord import Intents
 
-import scrapetube
 from discord.ext import tasks
 
 import key
 
-from run import Commands, Dates, Emojis, EventParam, Welcome, timedelta, Channels
+from run import Commands, Dates, Emojis, EventParam, Video, Welcome, Youtube, timedelta, Channels, scrapetube, db, default_commands
 
 from discord.ext import commands
 
@@ -27,10 +26,6 @@ prefix = "!"
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 embed = discord.Embed()  
-
-##tömb amit kiír majd az oldalon (így a felhasználó ezekkel a nevekkel nem tud majd új commandot létrehozni)
-#be vannak ezek kódolva cuccba ezért nem találja meg query
-commands = ["terkep", "neptun", "gyujtoszamla", "linkek", "to","datumok", "szoctam"]
 
 emojis = { "💻": "computer"  ,
            "🔧":"wrench" ,
@@ -46,35 +41,42 @@ roles = {"mernokinfo" : "Mérnökinfó",
           "epiteszmernok" : "Építészmérnök",
           "trombitas" : "Trombitás" }
 
-
-#  task_loop = int((Channels.query.filter_by(event='task_loop').all())[0].channel_id)
-#  print(task_loop[0].channel_id)
-#lol
 @tasks.loop(hours=int((Channels.query.filter_by(event='task_loop').all())[0].channel_id))
 async def checkforvideos():
-  videos = scrapetube.get_channel("UChSdMh3jciQ7LyGTFQ7fvGQ", sleep=30, limit=3)
-  valami =[]
-  for video in videos:
-    valami.append((video['videoId']))
-  latest_video_url = valami[0]
-  with open("yt_data.json", "r") as f:
-    data=json.load(f)
-  print("Now Checking!")
-  for youtube_channel in data:
-    print(f"Now Checking For {data[youtube_channel]['channel_name']}")
-    if not str(data[youtube_channel]["latest_video_url"]) == latest_video_url:
-      data[str(youtube_channel)]['latest_video_url'] = latest_video_url
-      with open("yt_data.json", "w") as f:
-        json.dump(data, f)
-      #hardcode ink?
-      #discord_channel_id = data[str(youtube_channel)]['notifying_discord_channel']
+  channels = Youtube.query.all()
+  for channel in channels:
+    all_video_ids = Video.query.filter_by(yt_id=channel.id).all()
+    titles = []
+    for title in all_video_ids:
+      titles.append(title.title)
+    videos = scrapetube.get_channel(channel.channel_id, limit=1)
+    vidis = []
+    for v in videos:
+      vidis.append(v['videoId'])
+      vidis.append(v['title']['runs'][0]['text'])
+    if channel.latest_video_url == vidis[0] and vidis[1] in titles:
+      print('no new vidi or delete')
+    elif vidis[1] in titles:
+      channel.latest_video_url = vidis[0]
+      print("delete volt")
+    else:
+      print("new vidi")
+      channel.latest_video_url = vidis[0]
+      new_vidi = Video(channel.id,vidis[1],vidis[1])
+      try:
+        db.session.add(new_vidi)
+        db.session.commit()
+      except:
+        print('db hiba')
+        db.session.rollback()
+      msg = f"@everyone {channel.name} feltöltött egy új youtube videót! Itt a hozzá tartozó link: {'https://www.youtube.com/watch?v='+vidis[0]}"
       channel_id = Channels.query.filter_by(event='youtube').all()
       discord_channel_id = channel_id[0].channel_id
       discord_channel = client.get_channel(int(discord_channel_id))
-      msg = f"@everyone {data[str(youtube_channel)]['channel_name']} feltöltött egy új youtube videót! Itt a hozzá tartozó link: {'https://www.youtube.com/watch?v='+latest_video_url}"
       await discord_channel.send(msg)
 
-#időintervallum 24h?
+      
+
 @tasks.loop(hours=int((Channels.query.filter_by(event='task_loop').all())[0].channel_id))
 async def checkfordates():
   event_param = EventParam.query.all()
@@ -97,10 +99,9 @@ async def checkfordates():
 
 @client.event
 async def on_ready():
-  #checkfordates.start()
+  checkfordates.start()
   checkforvideos.start()
   print('we have logged in as {0.user}'.format(client))
-
 
 @client.event
 async def on_message(message):
@@ -110,10 +111,13 @@ async def on_message(message):
   msg = message.content
   found_command = Commands.query.filter_by(command=msg).first()
   if found_command:
-    #found_command = Commands.query.filter_by(command=msg).first()
     embedVar = discord.Embed(title=found_command.title, description="", color=0x00ff00)
     embedVar.add_field(name=found_command.name, value=found_command.output, inline=False)
     await message.channel.send(embed=embedVar)
+
+  if found_command or msg in default_commands:
+    emoji = "🥶"
+    await message.add_reaction(emoji)
 
   if msg.startswith("!terkep"):
     embedVar = discord.Embed(title="SZE Térkép", description="", color=0x00ff00)
@@ -196,9 +200,6 @@ async def on_message(message):
     embedVar.add_field(name="!gyujtoszamla", value="Neptun gyűjtőszámlára utalás tutorial", inline=False)
     await message.channel.send(embed=embedVar)
   
-  if msg[0] == "!":
-    emoji = "🥶"
-    await message.add_reaction(emoji)
 
 # Üdvözlő üzenet új felhasználónak
 @client.event
@@ -241,7 +242,10 @@ async def on_raw_reaction_remove(payload):
   guild = discord.utils.find(lambda g: g.id == payload.guild_id, client.guilds)
   emoji = (payload.emoji.name)
   stemoji = (str(emoji))
-  found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
+  try:
+    found_emoji = Emojis.query.filter_by(icon=emojis[stemoji]).all()
+  except KeyError:
+    pass
   ro = roles[found_emoji[0].role]
   role = discord.utils.get(guild.roles, name=ro)
   member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
