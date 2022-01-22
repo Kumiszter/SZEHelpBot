@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Saját adott dátum létrehozása{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+   {% if messages %}
+      {% for message in messages %}
+         {{ message }}
+      {% endfor %}
+   {% endif %}
+{% endwith %}
+<div class="gradientbackground">
+    <div class="container col-xxl-8 px-4 py-5">
+        <h4>Esemény hozzáadás<h4>
+        <p class="lead">
+            Az alábbi űrlapon saját eseményeket adhatunk meg. Esemény létrehozása után 24 óránként a bot figyelmeztetőt fog küldeni, mennyi idő van hátra az eseményig.
+        </p>
+        <form method="POST" action="/datum-letrehozas">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="date">Adott dátum</span>
+                <input type="text" name="date" class="form-control" placeholder="példa-dátum(év.hónap.nap)" aria-label="date">
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="event">Esemény</span>
+                <input type="text" name="event" class="form-control" placeholder="valami esemény neve" aria-label="event">
+            </div>
+            <div class="input-group pt-4">
+                <span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Létrehozás</button></span>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
