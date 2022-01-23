@@ -17,22 +17,26 @@
         </p>
             <div class="row flex-lg-row-reverse align-items-center g-5 py-5"></div>
             <form method="POST" action="/channel">
+                <h4>
                 <span class="input-group-select" id="event_class">Event</span>
-                <select name="event" id="event">
+                <select class="form-select" name="event" id="event">
                 <option value="">Válassz eventet</option>
                 <option value="youtube">Youtube</option>
                 <option value="dates">Dates</option>
                 <option value="role">Role-reacc</option>
                 <option value="task_loop">Task loop</option>
+                </h4>
             </select>
+            <h4>
             <span class="input-group-select" id="channel_class">Channel</span>
-            <select name="channel" id="channel">
+            <select class="form-select" name="channel" id="channel">
             <option value="">Válassz channelt</option>
             <option value="813710089718071299">#general</option>
             <option value="831159464777744425">#test</option>
             <option value="918825577400643584">#role</option>
+            </h4>
             </select>
-            <div class="input-group mb-3">
+            <div class="input-group mt-3 mb-3">
                 <span class="input-group-text" id="task_loop_time">Task loop ideje</span>
                 <input type="text" name="task_loop_time" class="form-control" placeholder="egész pozitív számmal/órában" aria-label="task_loop_time">
             </div>
