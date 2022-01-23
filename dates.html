@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Aktív dátumok{% endblock %}
+
+{% block content %}
+<div class="gradientbackground">
+    <div class="container col-xxl-5 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                <h2>Aktív dátumok</h2>
+<!-- 		       	<ul class="list-group">
+                	{% for command in commands %}
+				  		<li class="list-group-item">{{command}}</li>
+					{% endfor %}
+				</ul> -->
+
+				<ul class="list-group mt-1">
+	 				{% for item in values %}
+						<a href="/datum-torles/{{item.id}}" class="btn btn-danger">Töröl</a>
+						<h5>Dátum: </h5>{{ item.date }} 
+						<h5>Esemény: </h5>{{ item.event }} 
+					{% endfor %}
+				</ul>
+				<form method="POST" action="/aktiv-datumok">
+					<h4><span class="input-group-select" id="param">Lista paraméter</span></h4>
+                	<select class="form-select mb-3" name="param" id="dateparam">
+                    <option value="">Válassz parametert</option>
+                    <option value="1">Időtartam (napban)</option>
+                    <option value="0">Esemény (darabszámban)</option>
+                </select>
+				<div class="input-group mb-3">
+					<span class="input-group-text" id="input_int">Adat</span>
+					<input type="text" name="input_int" class="form-control" placeholder="1/2/3" aria-label="input_int">
+				</div>
+					<span><button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check"></i>Megadás</button></span>
+				</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
